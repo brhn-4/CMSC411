@@ -1,0 +1,43 @@
+DECODE STAGE:
+
+ new.IDEX.instr = state->IFID.instr;
+    curr = new.IDEX.instr; //set curr
+
+    new.IDEX.offset = offset(curr); //set other fields
+    new.IDEX.pcPlus1 = state->IFID.pcPlus1;
+    new.IDEX.readRegA = new.reg[field_r1(curr)];
+    new.IDEX.readRegB = new.reg[field_r2(curr)];
+
+    if(( (opcode(state->IDEX.instr) == LW_OP) && (opcode(curr) == REG_REG_OP))){
+      if((field_r1(curr)==field_r2(state->IDEX.instr)) || 
+        (field_r2(curr)==field_r2(state->IDEX.instr))){
+          new.IDEX.instr = NOPINSTRUCTION; //set fields
+          new.IDEX.pcPlus1 = 0;
+          new.IDEX.readRegA = 0;
+           new.IDEX.readRegB = 0;
+          new.IDEX.offset = offset(NOPINSTRUCTION);
+          new.IFID.instr = state->IFID.instr;
+          curr = new.IFID.instr;
+          new.pc = new.pc-4; //adjust PC
+          new.IFID.pcPlus1 = new.pc;
+          cycles = cycles +1;  //adjust cycles
+        }
+    }
+    else if (( (opcode(state->IDEX.instr) == LW_OP) && (opcode(curr) != HALT_OP))&&
+        (field_r1(curr) == field_r2(state->IDEX.instr))){
+          new.IDEX.instr = NOPINSTRUCTION; //set fields
+          new.IDEX.pcPlus1 = 0;
+          new.IDEX.readRegA = 0;
+          new.IDEX.readRegB = 0;
+          new.IDEX.offset = offset(NOPINSTRUCTION);
+          new.IFID.instr = state->IFID.instr; 
+          curr = new.IFID.instr;
+          new.pc = new.pc - 4; //adjust PC
+          new.IFID.pcPlus1 = new.pc;
+          cycles = cycles +1;  //adjust cycle
+        }
+
+    new.EXMEM.instr = state->IDEX.instr;
+    curr = new.EXMEM.instr;
+    
+    currFunc = func(curr);
